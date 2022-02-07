@@ -18,6 +18,10 @@ import backoff
 import model
 import ngram_chain
 import pcfg
+import math
+import numpy as np
+
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('passwordfile', help='password training set')
@@ -53,4 +57,6 @@ for password in sys.stdin:
     password = password.strip('\r\n')
     estimations = [estimators[name].position(models[name].logprob(password))
                    for name in modelnames]
+
+    estimations = list(np.log2(estimations))         
     writer.writerow([password] + estimations)
