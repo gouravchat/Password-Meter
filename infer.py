@@ -118,7 +118,7 @@ def plot_guess_number_dist():
     print("Attack models record : ", attacks)
     for attack in attacks:
         plotFuncHist(df, attack)
-        git push -f 
+    
 
 
 
