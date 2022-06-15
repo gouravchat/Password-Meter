@@ -1,4 +1,4 @@
-# montecarlopwd
+# Monte Carlo statistical analysis 
 
 Monte Carlo password checking, as described in the
 [ACM CCS 2015 paper](http://www.eurecom.fr/~filippon/Publications/ccs15.pdf)
@@ -12,22 +12,20 @@ You may obtain a copy of the License at
 
 [http://www.apache.org/licenses/LICENSE-2.0]
 
-## Write me to get more info!
-
-Very limited documentation right now -- sorry!  If you want to use
-this write me (matteo_dellamico@symantec.com) and I'll add docs to
-help you do what you need. There's plenty of stuff to help scalability
-and persist models; my plan is to write documentation if somebody is
-interested in this.
 
 ## Dependencies
 
+- install conda
 - conda create -n PIM_pwdmeter python=3.6.9
 - pip install -r requirements.txt
 
 ## How to Use
 
-1. keep 80 percent password in .txt format (only passwords in each row) in TRAI_DATA folder
+1. keep 80 percent passwords in .txt format (only passwords in each row) in TRAIN_DATA folder
 2. keep rest in TEST_DATA folder
-3. python infer.py
-4. check results in GUESS_NUMBER folder
+3. Open config.py to change ngram settings, sample size , 
+4. python infer.py
+5. check results in GUESS_NUMBER folder
+
+## results explanation
+
