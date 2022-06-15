@@ -12,7 +12,7 @@
 import argparse
 import csv
 import sys
-
+from os import path,remove
 # internal imports
 import backoff
 import model
@@ -20,43 +20,85 @@ import ngram_chain
 import pcfg
 import math
 import numpy as np
+from config import *
+import pandas as pd
 
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument('passwordfile', help='password training set')
-parser.add_argument('--min_ngram', type=int, default=2,
-                    help='minimum n for n-grams')
-parser.add_argument('--max_ngram', type=int, default=5,
-                    help='maximum n for n-grams')
-parser.add_argument('--backoff_threshold', type=int, default=10,
-                    help='threshold for backoff')
-parser.add_argument('--samplesize', type=int, default=10000,
-                    help='sample size for Monte Carlo model')
-args = parser.parse_args()
+def train_analysis_meter(fileName = "ML_PWD.csv"):
 
-with open(args.passwordfile, 'rt') as f:
-    training = [w.strip('\r\n') for w in f]
 
-models = {'{}-gram'.format(i): ngram_chain.NGramModel(training, i)
-          for i in range(args.min_ngram, args.max_ngram + 1)}
-models['Backoff'] = backoff.BackoffModel(training, 10)
-models['PCFG'] = pcfg.PCFG(training)
+    print("starting analysis .....")
 
-samples = {name: list(model.sample(args.samplesize))
+    with open(TRAINING_DATA, 'rt') as f:
+        training = [w.strip('\r\n') for w in f]
+
+    models = {'{}-gram'.format(i): ngram_chain.NGramModel(training, i)
+          for i in range(MIN_NGRAM, MAX_NGRAM + 1)}
+    models['Backoff'] = backoff.BackoffModel(training, 10)
+    models['PCFG'] = pcfg.PCFG(training)
+    samples = {name: list(model.sample(SAMPLE_SIZE))
            for name, model in models.items()}
 
-estimators = {name: model.PosEstimator(sample)
+    estimators = {name: model.PosEstimator(sample)
               for name, sample in samples.items()}
-modelnames = sorted(models)
+    modelnames = sorted(models)
 
-writer = csv.writer(sys.stdout)
-writer.writerow(['password'] + modelnames)
+    # testing analysis
 
-for password in sys.stdin:
-    password = password.strip('\r\n')
-    estimations = [estimators[name].position(models[name].logprob(password))
+    with open(TESTING_DATA, 'rt') as f:
+        test_passwords = [w.strip('\r\n') for w in f]
+
+    colnames = ['password'] + [name for name in modelnames]
+
+    print(colnames)
+
+    df = pd.DataFrame(columns = colnames)
+    print(df)
+
+    for password in test_passwords:
+        logprobs = [models[name].logprob(password) for name in modelnames]
+        estimations = [estimators[name].position(models[name].logprob(password))
                    for name in modelnames]
+        estimations = list(np.log2(estimations))
+        result = {'password' : password}
+        for i,name in enumerate(modelnames):
+            result[name] = estimations[i]
+        print(result)
+        df = df.append(result,ignore_index = True)
+        print(df)
 
-    estimations = list(np.log2(estimations))         
-    writer.writerow([password] + estimations)
+    print(df)
+
+    if path.exists("new_password_analysis.csv"):
+        remove("new_password_analysis.csv")
+
+    df.to_csv("new_password_analysis.csv")
+
+    print("analysis done ...data saved  ...plotting...")
+
+
+    
+
+if __name__ == "__main__":
+
+    train_analysis_meter()
+
+
+   
+
+    
+
+
+            
+
+
+
+       
+
+
+
+
+
+
+
